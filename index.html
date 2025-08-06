@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Threat Monitor - SOC Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body data-color-scheme="dark">
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <h1>Cyber Threat Monitor</h1>
+                </div>
+                <div class="header-controls">
+                    <button id="theme-toggle" class="btn btn--outline btn--sm">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="status-indicator">
+                        <span class="status-light active"></span>
+                        <span>SOC Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container">
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-tab="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </button>
+                <button class="nav-tab" data-tab="threat-feed">
+                    <i class="fas fa-feed"></i>
+                    Threat Feed
+                </button>
+                <button class="nav-tab" data-tab="alerts">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Alerts
+                </button>
+                <button class="nav-tab" data-tab="analytics">
+                    <i class="fas fa-chart-line"></i>
+                    Analytics
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Dashboard View -->
+            <section id="dashboard" class="view active">
+                <div class="dashboard-grid">
+                    <!-- Threat Counter -->
+                    <div class="card metric-card critical">
+                        <div class="card__body">
+                            <div class="metric">
+                                <div class="metric-value" id="threat-counter">1,247</div>
+                                <div class="metric-label">Active Threats</div>
+                                <div class="metric-change positive">+23 today</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Status -->
+                    <div class="card">
+                        <div class="card__body">
+                            <h3>System Status</h3>
+                            <div class="status-grid">
+                                <div class="status-item">
+                                    <span class="status-light active"></span>
+                                    <span>Firewall</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-light active"></span>
+                                    <span>IDS/IPS</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-light warning"></span>
+                                    <span>SIEM</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-light active"></span>
+                                    <span>AV Engine</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Threat Distribution Chart -->
+                    <div class="card chart-card">
+                        <div class="card__body">
+                            <h3>Threat Distribution</h3>
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <canvas id="threat-distribution-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Activity Feed -->
+                    <div class="card activity-card">
+                        <div class="card__body">
+                            <h3>Live Activity Feed</h3>
+                            <div class="activity-feed" id="activity-feed">
+                                <!-- Activity items will be populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Threat Feed View -->
+            <section id="threat-feed" class="view">
+                <div class="view-header">
+                    <h2>Threat Intelligence Feed</h2>
+                    <div class="view-controls">
+                        <input type="text" class="form-control search-input" id="threat-search" placeholder="Search threats...">
+                        <select class="form-control filter-select" id="severity-filter">
+                            <option value="">All Severities</option>
+                            <option value="Critical">Critical</option>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                        <button class="btn btn--primary" id="export-btn">
+                            <i class="fas fa-download"></i>
+                            Export
+                        </button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="threat-table-container">
+                        <table class="threat-table" id="threat-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>IP Address</th>
+                                    <th>Country</th>
+                                    <th>Threat Type</th>
+                                    <th>Severity</th>
+                                    <th>Source</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="threat-table-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alerts View -->
+            <section id="alerts" class="view">
+                <div class="view-header">
+                    <h2>Security Alerts</h2>
+                    <div class="view-controls">
+                        <select class="form-control" id="alert-filter">
+                            <option value="">All Alerts</option>
+                            <option value="Critical">Critical Only</option>
+                            <option value="High">High Priority</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Critical Alerts -->
+                <div class="card alert-card critical">
+                    <div class="card__body">
+                        <h3><i class="fas fa-exclamation-circle"></i> Critical Alerts</h3>
+                        <div class="alerts-container" id="critical-alerts">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert History -->
+                <div class="card">
+                    <div class="card__body">
+                        <h3>Alert History</h3>
+                        <div class="alert-history" id="alert-history">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics View -->
+            <section id="analytics" class="view">
+                <div class="view-header">
+                    <h2>Threat Analytics</h2>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- Statistics Cards -->
+                    <div class="card metric-card">
+                        <div class="card__body">
+                            <div class="metric">
+                                <div class="metric-value" id="blocked-attacks">2,847</div>
+                                <div class="metric-label">Blocked Today</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card metric-card">
+                        <div class="card__body">
+                            <div class="metric">
+                                <div class="metric-value" id="avg-response">12s</div>
+                                <div class="metric-label">Avg Response</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card metric-card">
+                        <div class="card__body">
+                            <div class="metric">
+                                <div class="metric-value" id="threat-sources">47</div>
+                                <div class="metric-label">Threat Sources</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Threat Trends Chart -->
+                    <div class="card chart-card large">
+                        <div class="card__body">
+                            <h3>24-Hour Threat Trends</h3>
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <canvas id="trends-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Sources Chart -->
+                    <div class="card chart-card">
+                        <div class="card__body">
+                            <h3>Top Threat Sources</h3>
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <canvas id="sources-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Threat Detail Modal -->
+    <div class="modal hidden" id="threat-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Threat Details</h3>
+                <button class="modal-close" id="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toast-container">
+        <!-- Toasts will be added here -->
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
